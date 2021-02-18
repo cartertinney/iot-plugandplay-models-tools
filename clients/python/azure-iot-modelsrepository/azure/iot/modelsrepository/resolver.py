@@ -12,7 +12,7 @@ import urllib
 logger = logging.getLogger(__name__)
 
 
-REMOTE_PROTOCOLS = ["http", "https", "ftp"]
+REMOTE_PROTOCOLS = ["http", "https"]
 
 
 class ResolverError(Exception):

@@ -270,12 +270,6 @@ class TestResolveFromRemoteURLEndpoint(ResolveFromRemoteURLEndpointTestConfig):
                 id="HTTPS endpoint",
             ),
             pytest.param(
-                "ftp://somedomain.com/",
-                "dtmi:com:somedomain:example:FooDTDL;1",
-                "ftp://somedomain.com/dtmi/com/somedomain/example/foodtdl-1.json",
-                id="FTP endpoint",
-            ),
-            pytest.param(
                 "http://somedomain.com",
                 "dtmi:com:somedomain:example:FooDTDL;1",
                 "http://somedomain.com/dtmi/com/somedomain/example/foodtdl-1.json",
@@ -359,12 +353,6 @@ class TestResolveFromRemoteURLEndpointWithExpanded(ResolveFromRemoteURLEndpointT
                 "dtmi:com:somedomain:example:FooDTDL;1",
                 "https://somedomain.com/dtmi/com/somedomain/example/foodtdl-1.expanded.json",
                 id="HTTPS endpoint",
-            ),
-            pytest.param(
-                "ftp://somedomain.com/",
-                "dtmi:com:somedomain:example:FooDTDL;1",
-                "ftp://somedomain.com/dtmi/com/somedomain/example/foodtdl-1.expanded.json",
-                id="FTP endpoint",
             ),
             pytest.param(
                 "http://somedomain.com",
@@ -465,17 +453,6 @@ class TestResolveFromRemoteURLEndpointWithDependencyResolution(
                 "https://somedomain.com/dtmi/com/somedomain/example/quzdtdl-1.json",
                 "https://somedomain.com/dtmi/com/somedomain/example/bazdtdl-1.json",
                 id="HTTPS endpoint",
-            ),
-            pytest.param(
-                "ftp://somedomain.com/",
-                "dtmi:com:somedomain:example:FooDTDL;1",
-                "ftp://somedomain.com/dtmi/com/somedomain/example/foodtdl-1.json",
-                "ftp://somedomain.com/dtmi/com/somedomain/example/bardtdl-1.json",
-                "ftp://somedomain.com/dtmi/com/somedomain/example/buzzdtdl-1.json",
-                "ftp://somedomain.com/dtmi/com/somedomain/example/quxdtdl-1.json",
-                "ftp://somedomain.com/dtmi/com/somedomain/example/quzdtdl-1.json",
-                "ftp://somedomain.com/dtmi/com/somedomain/example/bazdtdl-1.json",
-                id="FTP endpoint",
             ),
             pytest.param(
                 "http://somedomain.com",
