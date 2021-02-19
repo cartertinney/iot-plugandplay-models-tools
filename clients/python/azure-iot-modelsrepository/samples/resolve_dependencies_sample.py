@@ -17,5 +17,5 @@ dtmi = "dtmi:com:example:TemperatureController;1"
 # from a .json file at the specified endpoint, as well as the DTMIs and DTDLs for all dependencies
 # on components and subcomponents mentioned in the document
 # i.e. https://devicemodels.azure.com/dtmi/com/example/temperaturecontroller-1.json
-a = resolver.resolve(dtmi, repository_endpoint, resolve_dependencies=True)
+a = resolver.resolve(dtmi, repository_endpoint, resolve_dependencies=resolver.DEPENDENCY_MODE_ENABLED)
 pprint.pprint(a)

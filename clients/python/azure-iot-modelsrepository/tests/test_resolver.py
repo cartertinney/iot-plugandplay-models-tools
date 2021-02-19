@@ -369,7 +369,7 @@ class TestResolveFromRemoteURLEndpointWithExpanded(ResolveFromRemoteURLEndpointT
         ],
     )
     def test_http_get(self, mocker, mock_http_get, endpoint, dtmi, expected_url):
-        resolver.resolve(dtmi, endpoint, expanded=True)
+        resolver.resolve(dtmi, endpoint, resolve_dependencies=resolver.DEPENDENCY_MODE_TRY_FROM_EXPANDED)
 
         assert mock_http_get.call_count == 1
         assert mock_http_get.call_args == mocker.call(expected_url)
@@ -378,7 +378,7 @@ class TestResolveFromRemoteURLEndpointWithExpanded(ResolveFromRemoteURLEndpointT
         "Returns a dictionary mapping DTMIs to corresponding DTDLs, for all elements of the expanded.json file returned by the HTTP GET, if the GET is successful (200 response)"
     )
     def test_returned_dict(self, mocker, mock_http_get, endpoint, foo_dtmi):
-        result = resolver.resolve(foo_dtmi, endpoint, expanded=True)
+        result = resolver.resolve(foo_dtmi, endpoint, resolve_dependencies=resolver.DEPENDENCY_MODE_TRY_FROM_EXPANDED)
         received_json = mock_http_get.return_value.json()
         assert isinstance(result, dict)
         assert len(result) == len(received_json)
@@ -400,7 +400,7 @@ class TestResolveFromRemoteURLEndpointWithExpanded(ResolveFromRemoteURLEndpointT
     )
     def test_invalid_dtmi(self, dtmi, endpoint):
         with pytest.raises(ValueError):
-            resolver.resolve(dtmi, endpoint, expanded=True)
+            resolver.resolve(dtmi, endpoint, resolve_dependencies=resolver.DEPENDENCY_MODE_TRY_FROM_EXPANDED)
 
     @pytest.mark.it("Raises a ValueError if the user-provided URL path is invalid")
     @pytest.mark.parametrize(
@@ -413,13 +413,13 @@ class TestResolveFromRemoteURLEndpointWithExpanded(ResolveFromRemoteURLEndpointT
     )
     def test_invalid_endpoint(self, foo_dtmi, endpoint):
         with pytest.raises(ValueError):
-            resolver.resolve(foo_dtmi, endpoint, expanded=True)
+            resolver.resolve(foo_dtmi, endpoint, resolve_dependencies=resolver.DEPENDENCY_MODE_TRY_FROM_EXPANDED)
 
     @pytest.mark.it("Raises a ResolverError if the HTTP GET is unsuccessful (not a 200 response)")
     def test_get_failure(self, mock_http_get, endpoint, foo_dtmi):
         mock_http_get.return_value.status_code = 400
         with pytest.raises(resolver.ResolverError):
-            resolver.resolve(foo_dtmi, endpoint, expanded=True)
+            resolver.resolve(foo_dtmi, endpoint, resolve_dependencies=resolver.DEPENDENCY_MODE_TRY_FROM_EXPANDED)
 
 
 @pytest.mark.describe(".resolve() -- Remote URL endpoint (Resolve DTDL Dependencies)")
@@ -492,7 +492,7 @@ class TestResolveFromRemoteURLEndpointWithDependencyResolution(
         expected_url5,
         expected_url6,
     ):
-        resolver.resolve(dtmi, endpoint, resolve_dependencies=True)
+        resolver.resolve(dtmi, endpoint, resolve_dependencies=resolver.DEPENDENCY_MODE_ENABLED)
 
         # NOTE: there are 6 calls, because we only do a GET for each UNIQUE component.
         # The BuzzDTDL is included twice in the structure, but only needs one GET call.
@@ -508,7 +508,7 @@ class TestResolveFromRemoteURLEndpointWithDependencyResolution(
         "Returns a dictionary mapping DTMIs to corresponding DTDLs from .json files returned by the HTTP GET operations, if the GETs are successful (200 response)"
     )
     def test_returned_dict(self, mocker, mock_http_get, endpoint, foo_dtmi):
-        result = resolver.resolve(foo_dtmi, endpoint, resolve_dependencies=True)
+        result = resolver.resolve(foo_dtmi, endpoint, resolve_dependencies=resolver.DEPENDENCY_MODE_ENABLED)
         assert isinstance(result, dict)
         assert (
             len(mock_http_get.cached_json_responses) == len(result) == mock_http_get.call_count == 6
@@ -531,7 +531,7 @@ class TestResolveFromRemoteURLEndpointWithDependencyResolution(
     )
     def test_invalid_dtmi(self, dtmi, endpoint):
         with pytest.raises(ValueError):
-            resolver.resolve(dtmi, endpoint, resolve_dependencies=True)
+            resolver.resolve(dtmi, endpoint, resolve_dependencies=resolver.DEPENDENCY_MODE_ENABLED)
 
     @pytest.mark.it("Raises a ValueError if the user-provided URL path is invalid")
     @pytest.mark.parametrize(
@@ -544,13 +544,13 @@ class TestResolveFromRemoteURLEndpointWithDependencyResolution(
     )
     def test_invalid_endpoint(self, foo_dtmi, endpoint):
         with pytest.raises(ValueError):
-            resolver.resolve(foo_dtmi, endpoint, resolve_dependencies=True)
+            resolver.resolve(foo_dtmi, endpoint, resolve_dependencies=resolver.DEPENDENCY_MODE_ENABLED)
 
     @pytest.mark.it("Raises a ResolverError if the HTTP GET is unsuccessful (not a 200 response)")
     def test_get_failure(self, mock_http_get, endpoint, foo_dtmi):
         mock_http_get.return_value.status_code = 400
         with pytest.raises(resolver.ResolverError):
-            resolver.resolve(foo_dtmi, endpoint, resolve_dependencies=True)
+            resolver.resolve(foo_dtmi, endpoint, resolve_dependencies=resolver.DEPENDENCY_MODE_ENABLED)
 
 
 class ResolveFromLocalFilesystemEndpointTestConfig(object):
@@ -753,7 +753,7 @@ class TestResolveFromLocalFilesystemEndpointWithExpanded(
         ],
     )
     def test_open(self, mocker, mock_open, endpoint, dtmi, expected_path):
-        resolver.resolve(dtmi, endpoint, expanded=True)
+        resolver.resolve(dtmi, endpoint, resolve_dependencies=resolver.DEPENDENCY_MODE_TRY_FROM_EXPANDED)
 
         assert mock_open.call_count == 1
         assert mock_open.call_args == mocker.call(expected_path)
@@ -763,7 +763,7 @@ class TestResolveFromLocalFilesystemEndpointWithExpanded(
         "Returns a dictionary mapping DTMIs to corresponding DTDLs, for all components of an expanded DTDL returned as a result of the file read"
     )
     def test_returned_dict(self, mocker, mock_open, endpoint, foo_dtmi):
-        result = resolver.resolve(foo_dtmi, endpoint, expanded=True)
+        result = resolver.resolve(foo_dtmi, endpoint, resolve_dependencies=resolver.DEPENDENCY_MODE_TRY_FROM_EXPANDED)
         received_json = json.loads(mock_open.return_value.read())
         assert isinstance(result, dict)
         assert len(result) == len(received_json)
@@ -785,7 +785,7 @@ class TestResolveFromLocalFilesystemEndpointWithExpanded(
     )
     def test_invalid_dtmi(self, dtmi, endpoint):
         with pytest.raises(ValueError):
-            resolver.resolve(dtmi, endpoint, expanded=True)
+            resolver.resolve(dtmi, endpoint, resolve_dependencies=resolver.DEPENDENCY_MODE_TRY_FROM_EXPANDED)
 
     @pytest.mark.it("Raises a ValueError if the user-provided URL path is invalid")
     @pytest.mark.parametrize(
@@ -798,14 +798,14 @@ class TestResolveFromLocalFilesystemEndpointWithExpanded(
     )
     def test_invalid_endpoint(self, foo_dtmi, endpoint):
         with pytest.raises(ValueError):
-            resolver.resolve(foo_dtmi, endpoint, expanded=True)
+            resolver.resolve(foo_dtmi, endpoint, resolve_dependencies=resolver.DEPENDENCY_MODE_TRY_FROM_EXPANDED)
 
     @pytest.mark.it("Raises a ResolverError if the file open/read is unsuccessful")
     def test_read_open_failure(self, mock_open, endpoint, foo_dtmi, arbitrary_exception):
         mock_open.side_effect = arbitrary_exception
 
         with pytest.raises(resolver.ResolverError) as e_info:
-            resolver.resolve(foo_dtmi, endpoint, expanded=True)
+            resolver.resolve(foo_dtmi, endpoint, resolve_dependencies=resolver.DEPENDENCY_MODE_TRY_FROM_EXPANDED)
         assert e_info.value.__cause__ == arbitrary_exception
 
 
@@ -900,7 +900,7 @@ class TestResolveFromLocalFilesystemEndpointWithDependencyResolution(
         expected_path5,
         expected_path6,
     ):
-        resolver.resolve(dtmi, endpoint, resolve_dependencies=True)
+        resolver.resolve(dtmi, endpoint, resolve_dependencies=resolver.DEPENDENCY_MODE_ENABLED)
 
         # NOTE: there are 6 calls, because we only do an open/read for each UNIQUE component.
         # The BuzzDTDL is included twice in the structure, but is only opened/read once.
@@ -917,7 +917,7 @@ class TestResolveFromLocalFilesystemEndpointWithDependencyResolution(
         "Returns a dictionary mapping DTMIs to corresponding DTDLs from .json files returned by the open/read operations"
     )
     def test_returned_dict(self, mocker, mock_open, endpoint, foo_dtmi):
-        result = resolver.resolve(foo_dtmi, endpoint, resolve_dependencies=True)
+        result = resolver.resolve(foo_dtmi, endpoint, resolve_dependencies=resolver.DEPENDENCY_MODE_ENABLED)
         assert isinstance(result, dict)
         assert (
             len(mock_open.return_value.read.cached_json_responses)
@@ -944,7 +944,7 @@ class TestResolveFromLocalFilesystemEndpointWithDependencyResolution(
     )
     def test_invalid_dtmi(self, dtmi, endpoint):
         with pytest.raises(ValueError):
-            resolver.resolve(dtmi, endpoint, resolve_dependencies=True)
+            resolver.resolve(dtmi, endpoint, resolve_dependencies=resolver.DEPENDENCY_MODE_ENABLED)
 
     @pytest.mark.it("Raises a ValueError if the user-provided URL path is invalid")
     @pytest.mark.parametrize(
@@ -957,14 +957,14 @@ class TestResolveFromLocalFilesystemEndpointWithDependencyResolution(
     )
     def test_invalid_endpoint(self, foo_dtmi, endpoint):
         with pytest.raises(ValueError):
-            resolver.resolve(foo_dtmi, endpoint, resolve_dependencies=True)
+            resolver.resolve(foo_dtmi, endpoint, resolve_dependencies=resolver.DEPENDENCY_MODE_ENABLED)
 
     @pytest.mark.it("Raises a ResolverError if the file open/read is unsuccessful")
     def test_read_open_failure(self, mock_open, endpoint, foo_dtmi, arbitrary_exception):
         mock_open.side_effect = arbitrary_exception
 
         with pytest.raises(resolver.ResolverError) as e_info:
-            resolver.resolve(foo_dtmi, endpoint, resolve_dependencies=True)
+            resolver.resolve(foo_dtmi, endpoint, resolve_dependencies=resolver.DEPENDENCY_MODE_ENABLED)
         assert e_info.value.__cause__ == arbitrary_exception
 
 

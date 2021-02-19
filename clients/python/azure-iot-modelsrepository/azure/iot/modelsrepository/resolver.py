@@ -12,14 +12,18 @@ import urllib
 logger = logging.getLogger(__name__)
 
 
-REMOTE_PROTOCOLS = ["http", "https"]
+DEPENDENCY_MODE_TRY_FROM_EXPANDED = "tryFromExapnded"
+DEPENDENCY_MODE_DISABLED = "disabled"
+DEPENDENCY_MODE_ENABLED = "enabled"
+
+_REMOTE_PROTOCOLS = ["http", "https"]
 
 
 class ResolverError(Exception):
     pass
 
 
-def resolve(dtmi, endpoint, expanded=False, resolve_dependencies=False):
+def resolve(dtmi, endpoint, resolve_dependencies=DEPENDENCY_MODE_DISABLED):
     """Retrieve and return the DTDL model(s) corresponding to the given DTMI
 
     :param str dtmi: DTMI for the desired DTDL model
@@ -40,7 +44,7 @@ def resolve(dtmi, endpoint, expanded=False, resolve_dependencies=False):
     """
     fully_qualified_dtmi = get_fully_qualified_dtmi(dtmi, endpoint)
 
-    if expanded:
+    if resolve_dependencies == DEPENDENCY_MODE_TRY_FROM_EXPANDED:
         fully_qualified_dtmi = fully_qualified_dtmi.replace(".json", ".expanded.json")
 
     # If fetching an expanded DTDL, this DTDL will be a list of models.
@@ -49,16 +53,16 @@ def resolve(dtmi, endpoint, expanded=False, resolve_dependencies=False):
 
     model_map = {}
     # If using expanded DTDL, add an entry to the model map for each model
-    if expanded:
+    if resolve_dependencies == DEPENDENCY_MODE_TRY_FROM_EXPANDED:
         for model in dtdl:
             model_map[model["@id"]] = model
     # If resolving dependencies, will need to fetch component models
     # NOTE: This (should) be unnecessary if using expanded DTDL because
     # expanded DTDL (should) already have all dependencies
-    elif resolve_dependencies:
+    elif resolve_dependencies == DEPENDENCY_MODE_ENABLED:
         model = dtdl
         model_map[dtmi] = model
-        _resolve_model_dependencies(model, endpoint, model_map)
+        _resolve_model_dependencies(model=model, endpoint=endpoint, model_map=model_map, mode=resolve_dependencies)
     # Otherwise, just return a one-entry map of the returned DTDL (single model)
     else:
         model = dtdl
@@ -89,7 +93,7 @@ def get_fully_qualified_dtmi(dtmi, endpoint):
     return fully_qualified_dtmi
 
 
-def _resolve_model_dependencies(model, endpoint, model_map):
+def _resolve_model_dependencies(model, endpoint, model_map, mode):
     """Retrieve all components and extended interface dependencies in the provided model from the provided
     endpoint, and add them to the provided model map.
     This recursively operates on the retrieved dependencies as well"""
@@ -114,7 +118,7 @@ def _resolve_model_dependencies(model, endpoint, model_map):
             # The fetched DTDL will be a single model
             dependency_model = _fetch_dtdl(fq_dependency_dtmi)
             model_map[dependency_dtmi] = dependency_model
-            _resolve_model_dependencies(dependency_model, endpoint, model_map)
+            _resolve_model_dependencies(model=dependency_model, endpoint=endpoint, model_map=model_map, mode=mode)
 
 
 def _fetch_dtdl(resource_location):
@@ -122,7 +126,7 @@ def _fetch_dtdl(resource_location):
     # Check value of endpoint to determine if URL or local filesystem directory
     parse_result = urllib.parse.urlparse(resource_location)
 
-    if parse_result.scheme in REMOTE_PROTOCOLS:
+    if parse_result.scheme in _REMOTE_PROTOCOLS:
         # HTTP/HTTPS URL
         json = _fetch_from_remote_url(resource_location)
     elif parse_result.scheme == "file":
